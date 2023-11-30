@@ -34,7 +34,7 @@ function reverseString(str: string) {
   return str.split("").reverse().join("");
 }
 
-function creatStringMatrix(rows: number, columns: number, fill: string) {
+function createStringMatrix(rows: number, columns: number, fill: string) {
   const matrix = [];
   for (let i = 0; i < rows; i++) {
     const row = fill.repeat(columns);
@@ -76,7 +76,7 @@ export default {
   splitArrayHalf,
   splitString,
   reverseString,
-  creatStringMatrix,
+  createStringMatrix,
   createMatrix,
   renderMatrix,
 };
