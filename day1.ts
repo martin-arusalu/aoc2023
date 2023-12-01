@@ -1,6 +1,6 @@
 import utils from "./utils.ts";
 
-type Data = Array<[string, string]>;
+type Data = Array<string>;
 const real: Data = [
   "fivethreeonezblqnsfk1",
   "two74119onebtqgnine",
@@ -1014,10 +1014,10 @@ const test: Data = [
 ];
 
 function part1(data: Data) {
-  let result: number = 0;
+  let result = 0;
 
   let sum = 0;
-  for (let row of data) {
+  for (const row of data) {
     const firstIndex = row.search(/\d/);
     const firstDigit = row[firstIndex];
 
@@ -1035,9 +1035,9 @@ function part1(data: Data) {
 }
 
 function part2(data: Data) {
-  let result: number = 0;
+  let result = 0;
 
-  const words = {
+  const words: { [key: string]: number } = {
     "1": 1,
     "2": 2,
     "3": 3,
@@ -1058,7 +1058,7 @@ function part2(data: Data) {
     "nine": 9,
   };
   const pattern = /(?=(\d|one|two|three|four|five|six|seven|eight|nine))/g;
-  for (let row of data) {
+  for (const row of data) {
     const digits = [...row.matchAll(pattern)];
     const firstDigit = words[digits[0][1]];
 
@@ -1071,7 +1071,7 @@ function part2(data: Data) {
   console.log(result);
 }
 
-// part1(test);
-// part1(real);
-// part2(test);
+part1(test);
+part1(real);
+part2(test);
 part2(real);
