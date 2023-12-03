@@ -129,7 +129,6 @@ function part1(data: Data) {
       }
     }
 
-    console.log(index + 1);
     result += index + 1;
   });
 
@@ -160,7 +159,7 @@ function part2(data: Data) {
   console.log(result);
 }
 
-// part1(test);
-// part1(real);
-// part2(test);
+part1(test);
+part1(real);
+part2(test);
 part2(real);

@@ -5,13 +5,13 @@ const real: Data = [];
 const test: Data = [];
 
 function part1(data: Data) {
-  let result: number = 0;
+  let result = 0;
 
   console.log(result);
 }
 
 function part2(data: Data) {
-  let result: number = 0;
+  let result = 0;
 
   console.log(result);
 }
