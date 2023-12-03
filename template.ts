@@ -1,6 +1,6 @@
 import utils from "./utils.ts";
 
-type Data = Array<[string, string]>;
+type Data = Array<string>;
 const real: Data = [];
 const test: Data = [];
 
@@ -16,7 +16,7 @@ function part2(data: Data) {
   console.log(result);
 }
 
-// part1(test);
+part1(test);
+// part1(real);
 // part2(test);
-part1(real);
 // part2(real);
