@@ -262,8 +262,3 @@ part1(format(test));
 part1(format(real));
 part2(format(test));
 part2(format(real));
-
-// 13
-// 17782
-// 30
-// 8477787
