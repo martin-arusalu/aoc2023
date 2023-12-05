@@ -1,19 +1,29 @@
 import utils from "./utils.ts";
 
 type Data = Array<string>;
-const real: Data = [];
-const test: Data = [];
+const real = ``;
+const test = ``;
 
-function part1(data: Data) {
-  let result = 0;
-
-  console.log(result);
+function format(input: string): Data {
+  return input.split("\n");
 }
 
-function part2(data: Data) {
+function part1(input: string) {
+  console.time("part1");
+  const data = format(input);
   let result = 0;
 
   console.log(result);
+  console.timeEnd("part1");
+}
+
+function part2(input: string) {
+  console.time("part2");
+  const data = format(input);
+  let result = 0;
+
+  console.log(result);
+  console.timeEnd("part2");
 }
 
 part1(test);
