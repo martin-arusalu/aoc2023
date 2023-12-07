@@ -10,8 +10,9 @@ function format(input: string): Data {
 
 function part1(input: string) {
   console.time("part1");
-  const data = format(input);
   let result = 0;
+
+  const data = format(input);
 
   console.log(result);
   console.timeEnd("part1");
@@ -19,8 +20,9 @@ function part1(input: string) {
 
 function part2(input: string) {
   console.time("part2");
-  const data = format(input);
   let result = 0;
+
+  const data = format(input);
 
   console.log(result);
   console.timeEnd("part2");
