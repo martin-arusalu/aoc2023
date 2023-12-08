@@ -1,10 +1,9 @@
 import utils from "./utils.ts";
 
-type Data = Array<string>;
 const real = ``;
 const test = ``;
 
-function format(input: string): Data {
+function format(input: string) {
   return input.split("\n");
 }
 

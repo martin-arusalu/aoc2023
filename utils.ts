@@ -208,6 +208,14 @@ function findShortestPath(graph: Graph, startNode: string, endNode: string) {
   return results;
 }
 
+function gcd(a: number, b: number): number {
+  return !b ? a : gcd(b, a % b);
+}
+
+function lcm(a: number, b: number): number {
+  return (a * b) / gcd(a, b);
+}
+
 export default {
   alphabetFull,
   alphabetlow,
@@ -223,6 +231,8 @@ export default {
   createGraph,
   findShortestPath,
   replaceAt,
+  gcd,
+  lcm,
 };
 
 // TODO manhattan distance
