@@ -1,5 +1,3 @@
-import utils from "./utils.ts";
-
 const real = ``;
 const test = ``;
 
