@@ -1,3 +1,5 @@
+import utils from "./utils.ts";
+
 const real = `%qx -> gz
 %tr -> rm
 %qr -> kx, jm
@@ -192,11 +194,103 @@ function part2(input: string) {
 
   const data = format(input);
 
+  for (const module in data) {
+    if (module.charAt(0) === "%") {
+      data[module].value = false;
+    } else if (module.charAt(0) === "&") {
+      data[module].value = {};
+      Object.keys(data)
+        .filter((m) => data[m].next.includes(module))
+        .forEach((m) =>
+          (data[module].value as { [key: string]: boolean })[m] = false
+        );
+    }
+  }
+
+  let signalsToSend: Array<[string, string, boolean]> = [];
+  const rxEntry = Object.keys(data).find((e) => data[e].next.includes("rx")) ??
+    "";
+  const loops: { [key: string]: { cur: number; vals: number[] } } = {};
+  Object.keys(data[rxEntry].value as any).forEach((key) => {
+    loops[key] = { cur: 0, vals: [] };
+  });
+
+  function process(
+    prev: string,
+    moduleName: string,
+    on: boolean,
+  ) {
+    const module = data[moduleName];
+    if (moduleName.charAt(0) === "%" && !on) {
+      module.value = !module.value;
+      for (const nextModule of module.next) {
+        signalsToSend.push([moduleName, nextModule, module.value]);
+      }
+    } else if (moduleName.charAt(0) === "&") {
+      if (
+        moduleName === rxEntry
+      ) {
+        Object.keys(data[rxEntry].value as any)
+          .filter((e) => (data[rxEntry].value as any)[e] === true)
+          .forEach((key) => {
+            loops[key].vals.push(loops[key].cur);
+            loops[key].cur = 0;
+          });
+      }
+      (module.value as { [key: string]: boolean })[prev] = on;
+      let toSend = true;
+      if (
+        Object.keys(module.value as { [key: string]: boolean }).every((e) =>
+          !!(module.value as { [key: string]: boolean })[e]
+        )
+      ) {
+        toSend = false;
+      }
+
+      for (const nextModule of module.next) {
+        signalsToSend.push([moduleName, nextModule, toSend]);
+      }
+    } else if (moduleName === "broadcaster") {
+      for (const nextModule of module.next) {
+        signalsToSend.push([moduleName, nextModule, on]);
+      }
+    }
+
+    return signalsToSend;
+  }
+
+  function push() {
+    signalsToSend = [[
+      "button",
+      "broadcaster",
+      false,
+    ]];
+    while (signalsToSend.length > 0) {
+      const iteration = signalsToSend.length;
+      for (let i = 0; i < iteration; i++) {
+        const signal = signalsToSend.shift();
+        if (signal) {
+          process(...signal);
+        }
+      }
+    }
+  }
+
+  while (Object.keys(loops).some((k) => loops[k].vals.length < 1)) {
+    Object.keys(loops).forEach((e) => loops[e].cur++);
+    push();
+  }
+
+  for (const loopKey in loops) {
+    if (result === 0) result = loops[loopKey].vals[0];
+    else result = utils.lcm(result, loops[loopKey].vals[0]);
+  }
+
   console.log(result);
   console.timeEnd("part2");
 }
 
-// part1(test);
-// part1(test2);
+part1(test);
+part1(test2);
 part1(real);
-// part2(real);
+part2(real);
