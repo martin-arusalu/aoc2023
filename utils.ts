@@ -217,7 +217,7 @@ class WeightedGraph {
     }
     return {
       distance: endDist,
-      path: path.concat(smallest ?? "").reverse().join("-"),
+      path: path.concat(smallest ?? "").reverse(),
     };
   }
 }
