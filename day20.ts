@@ -86,19 +86,6 @@ function format(input: string) {
   return final;
 }
 
-function deepCopy<T>(src: T): T {
-  const target = Array.isArray(src) ? [] as T : {} as T;
-  for (const prop in src) {
-    const value = src[prop];
-    if (value && typeof value === "object") {
-      target[prop] = deepCopy(value);
-    } else {
-      target[prop] = value;
-    }
-  }
-  return target;
-}
-
 function part1(input: string) {
   console.time("part1");
   let result = 0;
