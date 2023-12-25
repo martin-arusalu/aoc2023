@@ -72,140 +72,154 @@ function renderMatrix(matrix: Array<Array<unknown>>) {
   }
 }
 
-type Graph = { [coord: string]: Node };
-type Distances = { [coord: string]: number };
-type Node = { [coord: string]: number };
+// modified implementation of https://gist.github.com/Prottoy2938/66849e04b0bac459606059f5f9f3aa1a
+class Node {
+  val: string;
+  priority: number;
 
-function createGraph(data: Array<Array<number>>) {
-  const graph: Graph = {};
-
-  for (let y = 0; y < data.length; y++) {
-    for (let x = 0; x < data[y].length; x++) {
-      const node: Node = {};
-
-      if (y > 0) {
-        const valueDifference = data[y - 1][x] - data[y][x];
-        if (valueDifference < 2) {
-          node[`${x};${y - 1}`] = 1;
-        }
-      }
-      if (x > 0) {
-        const valueDifference = data[y][x - 1] - data[y][x];
-        if (valueDifference < 2) {
-          node[`${x - 1};${y}`] = 1;
-        }
-      }
-      if (x < data[y].length - 1) {
-        const valueDifference = data[y][x + 1] - data[y][x];
-        if (valueDifference < 2) {
-          node[`${x + 1};${y}`] = 1;
-        }
-      }
-
-      if (y < data.length - 1) {
-        const valueDifference = data[y + 1][x] - data[y][x];
-        if (valueDifference < 2) {
-          node[`${x};${y + 1}`] = 1;
-        }
-      }
-
-      graph[`${x};${y}`] = node;
-    }
+  constructor(val: string, priority: number) {
+    this.val = val;
+    this.priority = priority;
   }
-
-  return graph;
 }
 
-function shortestDistanceNode(
-  distances: Distances,
-  visited: string[],
-) {
-  // create a default value for shortest
-  let shortest = null;
+class PriorityQueue {
+  values: Node[];
 
-  // for each node in the distances object
-  for (const node in distances) {
-    // if no node has been assigned to shortest yet
-    // or if the current node's distance is smaller than the current shortest
-    const currentIsShortest = shortest === null ||
-      distances[node] < distances[shortest];
-
-    // and if the current node is in the unvisited set
-    if (currentIsShortest && !visited.includes(node)) {
-      // update shortest to be the current node
-      shortest = node;
+  constructor() {
+    this.values = [];
+  }
+  enqueue(val: string, priority: number) {
+    const newNode = new Node(val, priority);
+    this.values.push(newNode);
+    this.bubbleUp();
+  }
+  bubbleUp() {
+    let idx = this.values.length - 1;
+    const element = this.values[idx];
+    while (idx > 0) {
+      const parentIdx = Math.floor((idx - 1) / 2);
+      const parent = this.values[parentIdx];
+      if (element.priority >= parent.priority) break;
+      this.values[parentIdx] = element;
+      this.values[idx] = parent;
+      idx = parentIdx;
     }
   }
+  dequeue() {
+    const min = this.values[0];
+    const end = this.values.pop();
+    if (end && this.values.length > 0) {
+      this.values[0] = end;
+      this.sinkDown();
+    }
+    return min;
+  }
+  sinkDown() {
+    let idx = 0;
+    const length = this.values.length;
+    const element = this.values[0];
+    while (true) {
+      const leftChildIdx = 2 * idx + 1;
+      const rightChildIdx = 2 * idx + 2;
+      let leftChild, rightChild;
+      let swap = null;
 
-  // why 394? Check last year day 12
-  if (shortest && distances[shortest] >= 394) return null;
-  return shortest;
+      if (leftChildIdx < length) {
+        leftChild = this.values[leftChildIdx];
+        if (leftChild.priority < element.priority) {
+          swap = leftChildIdx;
+        }
+      }
+      if (rightChildIdx < length) {
+        rightChild = this.values[rightChildIdx];
+        if (
+          leftChild && (
+            (swap === null && rightChild.priority < element.priority) ||
+            (swap !== null && rightChild.priority < leftChild.priority)
+          )
+        ) {
+          swap = rightChildIdx;
+        }
+      }
+      if (swap === null) break;
+      this.values[idx] = this.values[swap];
+      this.values[swap] = element;
+      idx = swap;
+    }
+  }
 }
 
-function findShortestPath(graph: Graph, startNode: string, endNode: string) {
-  // track distances from the start node using a hash object
-  let distances: Distances = {};
-  distances[endNode] = Infinity;
-  distances = Object.assign(distances, graph[startNode]);
-
-  // track paths using a hash object
-  const parents: { [coord: string]: string | null } = { [endNode]: null };
-  for (const child in graph[startNode]) {
-    parents[child] = startNode;
+class WeightedGraph {
+  adjacencyList: { [key: string]: Array<{ node: string; weight: number }> };
+  constructor() {
+    this.adjacencyList = {};
   }
-
-  // collect visited nodes
-  const visited: string[] = [];
-  // find the nearest node
-  let node = shortestDistanceNode(distances, visited);
-
-  // for that node:
-  while (node) {
-    // find its distance from the start node & its child nodes
-    const distance = distances[node];
-    const children = graph[node];
-
-    // for each of those child nodes:
-    for (const child in children) {
-      // make sure each child node is not the start node
-      if (String(child) === String(startNode)) {
-        continue;
+  addVertex(vertex: string) {
+    if (!this.adjacencyList[vertex]) this.adjacencyList[vertex] = [];
+  }
+  addEdge(vertex1: string, vertex2: string, weight: number) {
+    const existing = this.adjacencyList[vertex1].find((e) =>
+      e.node === vertex2
+    );
+    if (!existing) {
+      this.adjacencyList[vertex1].push({ node: vertex2, weight });
+    }
+  }
+  Dijkstra(start: string, finish: string) {
+    const nodes = new PriorityQueue();
+    const distances: { [key: string]: number } = {};
+    const previous: { [key: string]: string | null } = {};
+    const path: string[] = [];
+    let endDist = Number.MAX_SAFE_INTEGER;
+    let smallest;
+    //build up initial state
+    for (const vertex in this.adjacencyList) {
+      if (vertex === start) {
+        distances[vertex] = 0;
+        nodes.enqueue(vertex, 0);
       } else {
-        // save the distance from the start node to the child node
-        const newdistance = distance + children[child];
-        // if there's no recorded distance from the start node to the child node in the distances object
-        // or if the recorded distance is shorter than the previously stored distance from the start node to the child node
-        if (!distances[child] || distances[child] > newdistance) {
-          // save the distance to the object
-          distances[child] = newdistance;
-          // record the path
-          parents[child] = node;
+        distances[vertex] = Infinity;
+        nodes.enqueue(vertex, Infinity);
+      }
+      previous[vertex] = null;
+    }
+    // as long as there is something to visit
+    while (nodes.values.length) {
+      smallest = nodes.dequeue().val;
+      if (smallest === finish) {
+        //WE ARE DONE
+        //BUILD UP PATH TO RETURN AT END
+        endDist = distances[smallest];
+        while (smallest && previous[smallest]) {
+          path.push(smallest);
+          smallest = previous[smallest];
+        }
+        break;
+      }
+      if (smallest || distances[smallest] !== Infinity) {
+        for (const neighbor in this.adjacencyList[smallest]) {
+          //find neighboring node
+          const nextNode = this.adjacencyList[smallest][neighbor];
+          //calculate new distance to neighboring node
+          const candidate = distances[smallest] + nextNode.weight;
+          const nextNeighbor = nextNode.node;
+          if (candidate < distances[nextNeighbor]) {
+            //updating new smallest distance to neighbor
+            distances[nextNeighbor] = candidate;
+            //updating previous - How we got to neighbor
+            previous[nextNeighbor] = smallest;
+            //enqueue in priority queue with new priority
+            nodes.enqueue(nextNeighbor, candidate);
+          }
         }
       }
     }
-    // move the current node to the visited set
-    visited.push(node);
-    // move to the nearest neighbor node
-    node = shortestDistanceNode(distances, visited);
+    return {
+      distance: endDist,
+      path: path.concat(smallest ?? "").reverse().join("-"),
+    };
   }
-
-  // using the stored paths from start node to end node
-  // record the shortest path
-  const shortestPath = [endNode];
-  let parent = parents[endNode];
-  while (parent) {
-    shortestPath.push(parent);
-    parent = parents[parent];
-  }
-  shortestPath.reverse();
-
-  //this is the shortest path
-  const results = {
-    distance: distances[endNode],
-    path: shortestPath,
-  };
-  // return the shortest path & the end node's distance from the start node
-  return results;
 }
 
 function gcd(a: number, b: number): number {
@@ -228,11 +242,13 @@ export default {
   createStringMatrix,
   createMatrix,
   renderMatrix,
-  createGraph,
-  findShortestPath,
   replaceAt,
   gcd,
   lcm,
+
+  WeightedGraph,
+  PriorityQueue,
+  Node,
 };
 
 // TODO manhattan distance
